@@ -13,12 +13,12 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/setup-python@v4
         with:
           python-version: "3.12.4"
 
       - name: Install dependencies
-        run: |
+      - run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
@@ -39,17 +39,18 @@ jobs:
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest          
 
       - name: Run tests
-        run: |
+      - run: |
           uvicorn main:app --host 127.0.0.1 --port 8000 &
           sleep 5
           curl -f http://localhost:8000/docs || exit 1
 
       - name: Push Docker image to registry
         if: success()
-        uses: docker/build-push-action@v4
+      - uses: docker/build-push-action@v4
         with:
           context: .
           file: ./Dockerfile
           push: true
           tags: |
-            haiyores/fastapi-app:latest
+             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:${{ github.sha }},
+             ${{ secrets.DOCKERHUB_USERNAME }}/${{ github.event.repository.name }}:latest  
